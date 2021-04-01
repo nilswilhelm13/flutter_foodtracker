@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_foodtracker/models/ingredient.dart';
+import 'package:flutter_foodtracker/search/custom_search_delegate.dart';
 
 class CreateMeal extends StatefulWidget {
   static const routeName = '/create-meal';
@@ -10,7 +11,7 @@ class CreateMeal extends StatefulWidget {
 }
 
 class _CreateMealState extends State<CreateMeal> {
-  List<Ingredient> _ingredients;
+  List<Ingredient> _ingredients = [];
 
   List<Widget> ingredientItems() {
     _ingredients.map(
@@ -30,6 +31,18 @@ class _CreateMealState extends State<CreateMeal> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Create Meal'),
+        actions: [
+          IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+                showSearch(context: context, delegate: CustomSearchDelegate())
+                    .then((value) {
+                  setState(() {
+                    _ingredients.add(value as Ingredient);
+                  });
+                });
+              })
+        ],
       ),
       body: Column(
         children: [
@@ -38,20 +51,23 @@ class _CreateMealState extends State<CreateMeal> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  Container(
-                    height: 100,
-                    child: Card(
-                      child: ListTile(
-                        title: Text(
-                          'ingredient.food.name',
-                        ),
-                        trailing: Container(
-                            width: 40,
-                            child: TextField(
-                              keyboardType: TextInputType.number,
-                            )),
-                      ),
-                    ),
+                  Text(_ingredients.fold(0, (previousValue, element) => previousValue + element.amount).toString()),
+                  Column(
+                    children: _ingredients
+                        .map((e) => ListTile(
+                              title: Text(e.food.name),
+                              trailing: Container(
+                                  width: 40,
+                                  child: TextField(
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        e.amount = double.parse(value);
+                                      });
+                                    },
+                                  )),
+                            ))
+                        .toList(),
                   ),
                 ],
               ),
