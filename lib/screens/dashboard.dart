@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_foodtracker/config/colors.dart';
 import 'package:flutter_foodtracker/models/daily_goals.dart';
 import 'package:flutter_foodtracker/models/intake.dart';
+import 'package:flutter_foodtracker/models/nutrition.dart';
 import 'package:flutter_foodtracker/providers/dashboard_provider.dart';
 import 'package:flutter_foodtracker/widgets/app_drawer.dart';
 import 'package:flutter_foodtracker/widgets/intake_pie_chart.dart';
@@ -13,7 +14,7 @@ import 'package:provider/provider.dart';
 
 class Dashboard extends StatefulWidget {
   static const routeName = '/dashboard';
-  String title = 'Dashboard';
+  final String title = 'Dashboard';
 
   @override
   _DashboardState createState() => _DashboardState();
@@ -31,15 +32,12 @@ class _DashboardState extends State<Dashboard> {
       setState(() {
         _intake = provider.dashboardData.intake;
         _dailyGoals = provider.dashboardData.dailyGoals;
-        _isLoading = false;
+        if (_intake != null && _dailyGoals != null) {
+          _isLoading = false;
+        }
       });
     });
     super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
   }
 
   Widget buildIndicator(String label, double value, double goal, Color color) {
@@ -87,6 +85,8 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
@@ -100,7 +100,7 @@ class _DashboardState extends State<Dashboard> {
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : Column(children: [
+          : (!_intake.nutrition.isEmpty()) ? Column(children: [
               Container(height: height * 0.6, child: IntakePieChart(_intake)),
               Divider(),
               Container(
@@ -119,7 +119,7 @@ class _DashboardState extends State<Dashboard> {
                   ],
                 ),
               )
-            ]),
+            ]) : Center(child: Text('There is nothing!')),
       drawer: AppDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () => null,

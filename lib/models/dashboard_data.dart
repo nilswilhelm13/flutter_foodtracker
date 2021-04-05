@@ -11,9 +11,9 @@ class DashboardData {
   DashboardData.fromJson(Map<String, dynamic> json) {
     intake = Intake.fromJson(json['intake']);
     dailyGoals = DailyGoals.fromJson(json['dailyGoals']);
-    transactions = (json['transactions'] as List<dynamic>)
-        .map((transactionJSON) =>
-            Transaction.fromJson(transactionJSON as Map<String, dynamic>))
-        .toList();
+    // transactions = (json['transactions'] as List<dynamic>)
+    //     .map((transactionJSON) =>
+    //         Transaction.fromJson(transactionJSON as Map<String, dynamic>))
+    //     .toList();
   }
 }

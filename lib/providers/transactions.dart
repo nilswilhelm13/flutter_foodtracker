@@ -22,7 +22,7 @@ class Transactions with ChangeNotifier {
       });
       var transactionsJSON = json.decode(response.body) as List<dynamic>;
       _transactions = transactionsJSON
-          .map((transaction) => Transaction.fromJson(transaction))
+          .map((transaction) => Transaction.fromJson(transaction as Map<String, dynamic>))
           .toList();
       notifyListeners();
     } catch (error) {

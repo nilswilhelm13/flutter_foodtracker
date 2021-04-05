@@ -14,4 +14,17 @@ class Nutrition {
     protein = json['protein'] == null ? 0 : json['protein'] is int ? (json['protein'] as int).toDouble() : json['protein'];
     salt = json['salt'] == null ? 0 : json['salt'] is int ? (json['salt'] as int).toDouble() : json['salt'];
   }
+
+  bool isEmpty() {
+    return energy == 0 && fat == 0 && carbohydrate == 0 && protein == 0 && salt == 0;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'energy': energy,
+      'fat': fat,
+      'carbohydrate': carbohydrate,
+      'protein': protein,
+    };
+  }
 }
