@@ -1,14 +1,14 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foodtracker/config/colors.dart';
+import 'package:flutter_foodtracker/config/scale.dart';
 import 'package:flutter_foodtracker/models/intake.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class IntakePieChart extends StatelessWidget {
   final Intake _intake;
 
   const IntakePieChart(this._intake);
+
 
   @override
   Widget build(BuildContext context) {
@@ -21,20 +21,20 @@ class IntakePieChart extends StatelessWidget {
             centerSpaceRadius: 100,
             sections: [
               PieChartSectionData(
-                value: _intake.nutrition.protein,
+                value: _intake.nutrition.protein * Scale.caloriesPerGramProtein,
                 showTitle: false,
                 radius: 80,
                 color: FoodColors.protein,
                 title: 'Protein',
               ),
               PieChartSectionData(
-                  value: _intake.nutrition.carbohydrate,
+                  value: _intake.nutrition.carbohydrate * Scale.caloriesPerGramCarbohydrate,
                   showTitle: false,
                   radius: 80,
                   color: FoodColors.carbohydrate,
                   title: 'Carbs'),
               PieChartSectionData(
-                  value: _intake.nutrition.fat,
+                  value: _intake.nutrition.fat * Scale.caloriesPerGramFat,
                   showTitle: false,
                   radius: 80,
                   color: FoodColors.fat,

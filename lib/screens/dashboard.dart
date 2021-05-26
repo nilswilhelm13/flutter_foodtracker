@@ -1,15 +1,12 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_foodtracker/config/colors.dart';
-import 'package:flutter_foodtracker/models/daily_goals.dart';
-import 'package:flutter_foodtracker/models/intake.dart';
-import 'package:flutter_foodtracker/models/nutrition.dart';
 import 'package:flutter_foodtracker/providers/dashboard_provider.dart';
+import 'package:flutter_foodtracker/screens/food_details.dart';
+import 'package:flutter_foodtracker/search/food_search.dart';
 import 'package:flutter_foodtracker/widgets/app_drawer.dart';
+import 'package:flutter_foodtracker/widgets/generic_error_modal.dart';
+import 'package:flutter_foodtracker/widgets/intake_bar_charts.dart';
 import 'package:flutter_foodtracker/widgets/intake_pie_chart.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:flutter_foodtracker/widgets/scan_button.dart';
 import 'package:provider/provider.dart';
 
 class Dashboard extends StatefulWidget {
@@ -22,110 +19,76 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   bool _isLoading = true;
-  Intake _intake;
-  DailyGoals _dailyGoals;
+  String barcode = '';
+
+  void fetchIntake(BuildContext context) {
+    var provider = Provider.of<DashboardProvider>(context, listen: false);
+    setState(() {
+      _isLoading = true;
+    });
+    provider.fetchIntake().then((value) {
+      setState(() {
+        _isLoading = false;
+      });
+    }).catchError((error) {
+      showDialog(context: context, builder: (ctx) => GenericErrorModal(error));
+    });
+  }
 
   @override
   void initState() {
-    var provider = Provider.of<DashboardProvider>(context, listen: false);
-    provider.fetchIntake().then((value) {
-      setState(() {
-        _intake = provider.dashboardData.intake;
-        _dailyGoals = provider.dashboardData.dailyGoals;
-        if (_intake != null && _dailyGoals != null) {
-          _isLoading = false;
-        }
-      });
-    });
+    fetchIntake(context);
     super.initState();
   }
-
-  Widget buildIndicator(String label, double value, double goal, Color color) {
-    return Column(
-      children: [
-        Text(label),
-        CircularPercentIndicator(
-          center:
-              Text('${value.toStringAsFixed(0)}/${goal.toStringAsFixed(0)}'),
-          radius: 70,
-          percent: 0.7,
-          progressColor: color,
-          footer: Text(label),
-        ),
-      ],
-    );
-  }
-
-  Widget buildLinearIndicator(
-      String label, double value, double goal, Color color) {
-    return Container(
-      margin: EdgeInsets.all(5),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            textAlign: TextAlign.start,
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          LinearPercentIndicator(
-            center: Text(
-              '${value.toStringAsFixed(0)}/${goal.toStringAsFixed(0)}',
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            ),
-            percent: min(value / goal, 1),
-            progressColor: color,
-            lineHeight: 15,
-          ),
-        ],
-      ),
-    );
-  }
-
-
 
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
+    var dashboardData = Provider.of<DashboardProvider>(context).dashboardData;
+    if (dashboardData == null) {
+      fetchIntake(context);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           widget.title,
         ),
+        actions: [
+          IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+                showSearch(context: context, delegate: FoodSearch())
+                    .then((value) {
+                  if (value == null) {
+                    return;
+                  }
+                  Navigator.of(context).pushNamed(
+                    FoodDetails.routeName,
+                    arguments: value,
+                  );
+                });
+              }),
+        ],
       ),
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : (!_intake.nutrition.isEmpty()) ? Column(children: [
-              Container(height: height * 0.6, child: IntakePieChart(_intake)),
-              Divider(),
-              Container(
-                width: MediaQuery.of(context).size.width * .7,
-                child: Column(
-                  children: [
-                    buildLinearIndicator('Protein', _intake.nutrition.protein,
-                        _dailyGoals.nutrition.protein, FoodColors.protein),
-                    buildLinearIndicator(
-                        'Carbohydrate',
-                        _intake.nutrition.carbohydrate,
-                        _dailyGoals.nutrition.carbohydrate,
-                        FoodColors.carbohydrate),
-                    buildLinearIndicator('Fat', _intake.nutrition.fat,
-                        _dailyGoals.nutrition.fat, FoodColors.fat),
-                  ],
-                ),
-              )
-            ]) : Center(child: Text('There is nothing!')),
+          : (!dashboardData.intake.nutrition.isEmpty())
+              ? Column(children: [
+                  Container(
+                      height: height * 0.6,
+                      child: IntakePieChart(dashboardData.intake)),
+                  Divider(),
+                  Container(
+                    width: MediaQuery.of(context).size.width * .7,
+                    child: IntakeBarCharts(dashboardData)
+                  )
+                ])
+              : Center(child: Text('There is nothing!')),
       drawer: AppDrawer(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => null,
-        tooltip: 'Increment',
-        child: Icon(Icons.qr_code_scanner),
-      ),
+      floatingActionButton: ScanButton(),
     );
   }
 }

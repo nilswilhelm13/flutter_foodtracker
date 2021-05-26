@@ -1,13 +1,22 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_foodtracker/config/http_config.dart';
+import 'package:flutter_foodtracker/error_handling/food_not_found_exception.dart';
 import 'package:flutter_foodtracker/models/food.dart';
 import 'package:flutter_foodtracker/models/ingredient.dart';
 import 'package:flutter_foodtracker/models/nutrition.dart';
-import 'package:flutter_foodtracker/search/custom_search_delegate.dart';
+import 'package:flutter_foodtracker/providers/food_provider.dart';
+import 'package:flutter_foodtracker/search/food_search.dart';
+import 'package:flutter_foodtracker/widgets/app_drawer.dart';
+import 'package:flutter_foodtracker/widgets/food_not_found_dialog.dart';
 import 'package:flutter_foodtracker/widgets/meal_info.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:provider/provider.dart';
+
+import '../barcode.dart';
 
 class CreateMeal extends StatefulWidget {
   static const routeName = '/create-meal';
@@ -19,11 +28,15 @@ class CreateMeal extends StatefulWidget {
 class _CreateMealState extends State<CreateMeal> {
   List<Ingredient> _ingredients = [];
 
+  String mealName;
+
   double energy = 0;
   double fat = 0;
   double carbohydrate = 0;
   double protein = 0;
   double amount = 0;
+
+  double customTotal = 0;
 
   void recalcValues() {
     energy = 0;
@@ -31,12 +44,14 @@ class _CreateMealState extends State<CreateMeal> {
     carbohydrate = 0;
     protein = 0;
     _ingredients.forEach((ingredient) {
-      energy += ingredient.food.nutrition.energy * ingredient.amount / 100;
-      fat += ingredient.food.nutrition.fat * ingredient.amount / 100;
+      energy += ingredient.food.nutrition.energy * ingredient.amount;
+      fat += ingredient.food.nutrition.fat * ingredient.amount;
       carbohydrate +=
-          ingredient.food.nutrition.carbohydrate * ingredient.amount / 100;
-      protein += ingredient.food.nutrition.protein * ingredient.amount / 100;
+          ingredient.food.nutrition.carbohydrate * ingredient.amount;
+      protein += ingredient.food.nutrition.protein * ingredient.amount;
+      amount += ingredient.amount;
     });
+    amount = customTotal > 0 ? customTotal : amount;
     energy /= amount;
     fat /= amount;
     carbohydrate /= amount;
@@ -65,72 +80,106 @@ class _CreateMealState extends State<CreateMeal> {
           IconButton(
               icon: Icon(Icons.search),
               onPressed: () {
-                showSearch(context: context, delegate: CustomSearchDelegate())
+                showSearch(context: context, delegate: FoodSearch())
                     .then((value) {
+                  if (value == null) {
+                    return;
+                  }
                   setState(() {
-                    _ingredients.add(value as Ingredient);
+                    _ingredients.add(Ingredient(value as Food, 0));
+                  });
+                });
+              }),
+          IconButton(
+              icon: Icon(Icons.qr_code_scanner),
+              onPressed: () {
+                Barcode.scanBarcode().then((value) {
+                  Provider.of<FoodProvider>(context, listen: false)
+                      .getFoodByEan(value)
+                      .then((value) {
+                    setState(() {
+                      _ingredients.add(Ingredient(value, 0));
+                    });
+                  }).catchError((error) {
+                    if (error is FoodNotFoundException) {
+                      showDialog(
+                          context: context,
+                          builder: (ctx) => FoodNotFoundDialog(error.ean));
+                    }
                   });
                 });
               }),
           IconButton(icon: Icon(Icons.post_add), onPressed: postMeal),
         ],
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            height: MediaQuery.of(context).size.height * 0.7,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Column(
-                    children: _ingredients
-                        .map((e) => ListTile(
-                              title: Text(e.food.name),
-                              trailing: Container(
-                                  width: 40,
-                                  child: TextField(
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        e.amount = double.parse(value);
-                                        recalcValues();
-                                      });
-                                    },
-                                  )),
-                            ))
-                        .toList(),
-                  ),
-                ],
+      drawer: AppDrawer(),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height * 0.65,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Column(
+                      children: _ingredients
+                          .map((e) => ListTile(
+                                title: Text(e.food.name),
+                                trailing: Container(
+                                    width: 40,
+                                    child: TextField(
+                                      keyboardType: TextInputType.number,
+                                      onSubmitted: (value) {
+                                        setState(() {
+                                          e.amount = double.parse(value);
+                                          recalcValues();
+                                        });
+                                      },
+                                    )),
+                              ))
+                          .toList(),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          Container(
-            height: MediaQuery.of(context).size.height * 0.1,
-            child: MealInfo(
-              energy: energy,
-              fat: fat,
-              carbohydrate: carbohydrate,
-              protein: protein,
+            Container(
+              height: MediaQuery.of(context).size.height * 0.2,
+              child: MealInfo(
+                energy: energy,
+                fat: fat,
+                carbohydrate: carbohydrate,
+                protein: protein,
+                customTotalHandler: (value) {
+                  setState(() {
+                    customTotal = double.parse(value);
+                    recalcValues();
+                  });
+                },
+                nameHandler: (value) {
+                  setState(() {
+                    this.mealName = value;
+                  });
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Future<void> postMeal() {
-    const String token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JpemVkIjp0cnVlLCJleHAiOjE2MTc3MjQyNTAsInVzZXIiOiJ0ZXN0QGV4YW1wbGUuY29tIn0.FebKTuCM1ZuDt6_iDFtceNh9aUQSL6S27V8yS7_7qzk';
-    var url = Uri.https('backend.nilswilhelm.net', 'foodlist/1');
+    var url = Uri.https(HttpConfig.baseUrl, 'foodlist/1');
     http
         .post(url,
             headers: {
-              'Authorization': token,
-              'userId': 'test@example.com',
+              'Authorization': HttpConfig.token,
+              'userId': HttpConfig.userId,
             },
             body: json.encode(Food(
-                    name: 'Flutter Meal Test',
+                    name: mealName,
                     userId: 'test@example.com',
                     nutrition: Nutrition(
                       energy: energy,

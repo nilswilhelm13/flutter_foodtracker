@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_foodtracker/config/http_config.dart';
 import 'package:http/http.dart' as http;
 import '../models/transaction.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class Transactions with ChangeNotifier {
   List<Transaction> _transactions = [];
-  static const String token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JpemVkIjp0cnVlLCJleHAiOjE2MTc3MjQyNTAsInVzZXIiOiJ0ZXN0QGV4YW1wbGUuY29tIn0.FebKTuCM1ZuDt6_iDFtceNh9aUQSL6S27V8yS7_7qzk';
 
   List<Transaction> get transactions {
     return [..._transactions];
@@ -14,35 +14,39 @@ class Transactions with ChangeNotifier {
 
   Future<void> fetchTransactions() async {
     var url =
-        Uri.https('backend.nilswilhelm.net', 'transactions/test@example.com}');
+        Uri.https(HttpConfig.baseUrl, 'transactions', {
+          'date': DateFormat('yyyy-MM-dd').format(DateTime.now())
+        });
     try {
       final response = await http.get(url, headers: {
-        'Authorization': token,
-        'userId': 'test@example.com',
-      });
+        'Authorization': HttpConfig.token,
+        'userId': HttpConfig.userId,
+      },);
+      if (response.statusCode / 100 != 2){
+        throw Exception('fetching failed. status code: ${response.statusCode}');
+      }
       var transactionsJSON = json.decode(response.body) as List<dynamic>;
       _transactions = transactionsJSON
           .map((transaction) => Transaction.fromJson(transaction as Map<String, dynamic>))
           .toList();
       notifyListeners();
     } catch (error) {
-      print(error.toString());
+      throw(error);
     }
   }
 
   Future<void> deleteTransaction(String id) async {
     var url =
-    Uri.https('backend.nilswilhelm.net', 'intake/$id');
+    Uri.https(HttpConfig.baseUrl, 'intake/$id');
     try {
       final response = await http.delete(url, headers: {
-        'Authorization': token,
-        'userId': 'test@example.com',
+        'Authorization': HttpConfig.token,
+        'userId':HttpConfig.userId,
       });
       if (response.statusCode == 200) {
         _transactions.removeWhere((element) => element.id == id);
         notifyListeners();
       }
-
     } catch (error) {
       print(error.toString());
     }

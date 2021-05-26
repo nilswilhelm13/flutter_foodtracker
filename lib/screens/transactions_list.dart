@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_foodtracker/error_handling/generic_error_handling.dart';
 import 'package:flutter_foodtracker/providers/transactions.dart';
 import 'package:flutter_foodtracker/widgets/app_drawer.dart';
+import 'package:flutter_foodtracker/widgets/generic_error_modal.dart';
 import 'package:flutter_foodtracker/widgets/transaction_item.dart';
 import 'package:flutter_foodtracker/widgets/transaction_modal.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +28,8 @@ class _TransactionsListState extends State<TransactionsList> {
         _isLoading = false;
         _transactions = provider.transactions;
       });
+    }).catchError((error) {
+      showDialog(context: context, builder: (ctx) => GenericErrorModal(error));
     });
     super.initState();
   }
@@ -45,7 +49,8 @@ class _TransactionsListState extends State<TransactionsList> {
                   itemBuilder: (_, i) => GestureDetector(
                       onTap: () => showDialog(
                             context: context,
-                            builder: (ctx) => TransactionModal(transaction: _transactions[i]),
+                            builder: (ctx) =>
+                                TransactionModal(transaction: _transactions[i]),
                           ),
                       child: TransactionItem(_transactions[i])))),
       floatingActionButton: FloatingActionButton(
@@ -56,5 +61,3 @@ class _TransactionsListState extends State<TransactionsList> {
     );
   }
 }
-
-

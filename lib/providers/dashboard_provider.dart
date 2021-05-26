@@ -1,28 +1,28 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_foodtracker/config/http_config.dart';
 import 'package:flutter_foodtracker/models/dashboard_data.dart';
 import 'package:http/http.dart' as http;
 
 class DashboardProvider with ChangeNotifier {
   DashboardData _dashboardData;
 
-  static const String token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JpemVkIjp0cnVlLCJleHAiOjE2MTc3MjQyNTAsInVzZXIiOiJ0ZXN0QGV4YW1wbGUuY29tIn0.FebKTuCM1ZuDt6_iDFtceNh9aUQSL6S27V8yS7_7qzk';
-
   Future<void> fetchIntake() async {
-
-    var url =
-    Uri.https('backend.nilswilhelm.net', 'dashboard');
+    var url = Uri.https(HttpConfig.baseUrl, 'dashboard');
     try {
       final response = await http.get(url, headers: {
-        'Authorization': token,
-        'userId': 'test@example.com',
+        'Authorization': HttpConfig.token,
+        'userId': HttpConfig.userId,
       });
+      if (response.statusCode / 100 != 2) {
+        throw Exception('fetching failed. status code: ${response.statusCode}');
+      }
       var dashboardJSON = json.decode(response.body) as Map<String, dynamic>;
       _dashboardData = DashboardData.fromJson(dashboardJSON);
+      notifyListeners();
     } catch (error) {
-      print(error.toString());
+      throw (error);
     }
   }
 

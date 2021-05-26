@@ -1,13 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_foodtracker/config/http_config.dart';
 import 'package:flutter_foodtracker/models/food.dart';
 import 'package:flutter_foodtracker/models/ingredient.dart';
 import 'package:http/http.dart' as http;
 
-class CustomSearchDelegate extends SearchDelegate {
-  static const String token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JpemVkIjp0cnVlLCJleHAiOjE2MTc3MjQyNTAsInVzZXIiOiJ0ZXN0QGV4YW1wbGUuY29tIn0.FebKTuCM1ZuDt6_iDFtceNh9aUQSL6S27V8yS7_7qzk';
+class FoodSearch extends SearchDelegate {
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -40,7 +39,7 @@ class CustomSearchDelegate extends SearchDelegate {
               itemCount: snapshot.data.length,
               itemBuilder: (ctx, i) => ListTile(
                 onTap: () {
-                  close(context, Ingredient(snapshot.data[i], 0));
+                  close(context, snapshot.data[i]);
                 },
                 title: Text(
                   snapshot.data[i].name,
@@ -61,11 +60,11 @@ class CustomSearchDelegate extends SearchDelegate {
 
   Future<List<Food>> searchFood(String query) async {
     print('search food ...');
-    var url = Uri.https('backend.nilswilhelm.net', 'search/$query');
+    var url = Uri.https(HttpConfig.baseUrl, 'search/$query');
     try {
       final response = await http.get(url, headers: {
-        'Authorization': token,
-        'userId': 'test@example.com',
+        'Authorization': HttpConfig.token,
+        'userId': HttpConfig.userId,
       });
       var foodsJSON = json.decode(response.body) as List<dynamic>;
       print(foodsJSON);
