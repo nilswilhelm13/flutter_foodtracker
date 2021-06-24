@@ -11,6 +11,7 @@ import 'package:flutter_foodtracker/widgets/app_drawer.dart';
 import 'package:flutter_foodtracker/widgets/generic_error_modal.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class History extends StatefulWidget {
   static const String routeName = '/history';
@@ -243,12 +244,13 @@ class HistoryState extends State<History> {
   }
 
   fetchHistory() async {
+    final prefs = await SharedPreferences.getInstance();
     var url = Uri.https(HttpConfig.baseUrl, 'history');
     _isLoading = true;
     try {
       final response = await http.get(url, headers: {
-        'Authorization': HttpConfig.token,
-        'userId': HttpConfig.userId,
+        'Authorization': prefs.getString('token'),
+        'userId': prefs.getString('userId'),
       });
       if (response.statusCode != 200) {
         throw Exception('could fetch history');

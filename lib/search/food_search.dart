@@ -5,6 +5,7 @@ import 'package:flutter_foodtracker/config/http_config.dart';
 import 'package:flutter_foodtracker/models/food.dart';
 import 'package:flutter_foodtracker/models/ingredient.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FoodSearch extends SearchDelegate {
 
@@ -59,12 +60,13 @@ class FoodSearch extends SearchDelegate {
   }
 
   Future<List<Food>> searchFood(String query) async {
+    final prefs = await SharedPreferences.getInstance();
     print('search food ...');
     var url = Uri.https(HttpConfig.baseUrl, 'search/$query');
     try {
       final response = await http.get(url, headers: {
-        'Authorization': HttpConfig.token,
-        'userId': HttpConfig.userId,
+        'Authorization': prefs.getString('token'),
+        'userId': prefs.getString('userId'),
       });
       var foodsJSON = json.decode(response.body) as List<dynamic>;
       print(foodsJSON);

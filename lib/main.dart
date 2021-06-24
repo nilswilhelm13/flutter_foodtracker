@@ -11,6 +11,7 @@ import 'package:flutter_foodtracker/screens/create_meal.dart';
 import 'package:flutter_foodtracker/screens/dashboard.dart';
 import 'package:flutter_foodtracker/screens/food_details.dart';
 import 'package:flutter_foodtracker/screens/historty.dart';
+import 'package:flutter_foodtracker/screens/login_screen.dart';
 import 'package:flutter_foodtracker/screens/transactions_list.dart';
 import 'package:provider/provider.dart';
 
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
           BarCodeScanner.routeName: (ctx) => BarCodeScanner(),
           CreateFood.routeName: (ctx) => CreateFood(),
           History.routeName: (ctx) => History(),
+          LoginScreen.routeName: (ctx) => LoginScreen(),
         },
       ),
     );

@@ -15,6 +15,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../barcode.dart';
 
@@ -170,13 +171,14 @@ class _CreateMealState extends State<CreateMeal> {
     );
   }
 
-  Future<void> postMeal() {
+  Future<void> postMeal() async {
     var url = Uri.https(HttpConfig.baseUrl, 'foodlist/1');
+    final prefs = await SharedPreferences.getInstance();
     http
         .post(url,
             headers: {
-              'Authorization': HttpConfig.token,
-              'userId': HttpConfig.userId,
+              'Authorization': prefs.getString('token'),
+              'userId': prefs.getString('userId'),
             },
             body: json.encode(Food(
                     name: mealName,

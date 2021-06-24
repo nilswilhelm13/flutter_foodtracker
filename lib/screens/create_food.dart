@@ -6,6 +6,7 @@ import 'package:flutter_foodtracker/models/food.dart';
 import 'package:flutter_foodtracker/screens/food_details.dart';
 import 'package:flutter_foodtracker/widgets/generic_error_modal.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateFood extends StatefulWidget {
   static const String routeName = '/create-food';
@@ -141,11 +142,12 @@ class _CreateFoodState extends State<CreateFood> {
     var url = Uri.https(HttpConfig.baseUrl, 'food');
     _isLoading = true;
     print(_food.nutrition.protein);
+    final prefs = await SharedPreferences.getInstance();
     try {
       final response = await http.post(url,
           headers: {
-            'Authorization': HttpConfig.token,
-            'userId': HttpConfig.userId,
+            'Authorization': prefs.getString('token'),
+            'userId': prefs.getString('userId'),
           },
           body: json.encode(_food.toJson()));
       _isLoading = false;
@@ -167,11 +169,12 @@ class _CreateFoodState extends State<CreateFood> {
     _form.currentState.save();
     var url = Uri.https(HttpConfig.baseUrl, 'food/${_food.id}');
     _isLoading = true;
+    final prefs = await SharedPreferences.getInstance();
     try {
       final response = await http.put(url,
           headers: {
-            'Authorization': HttpConfig.token,
-            'userId': HttpConfig.userId,
+            'Authorization':prefs.getString('token'),
+            'userId': prefs.getString('userId'),
           },
           body: json.encode({
             "ean": _food.ean,

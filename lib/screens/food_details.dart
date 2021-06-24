@@ -7,6 +7,7 @@ import 'package:flutter_foodtracker/providers/dashboard_provider.dart';
 import 'package:flutter_foodtracker/screens/create_food.dart';
 import 'package:flutter_foodtracker/widgets/generic_error_modal.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/food.dart';
 import 'package:http/http.dart' as http;
 
@@ -96,13 +97,14 @@ class _FoodDetailsState extends State<FoodDetails> {
     );
   }
 
-  Future<void> postTransaction(BuildContext ctx, Food food, double _amount) {
+  Future<void> postTransaction(BuildContext ctx, Food food, double _amount) async{
+    final prefs = await SharedPreferences.getInstance();
     var url = Uri.https(HttpConfig.baseUrl, 'intake');
     return http
         .post(url,
             headers: {
-              'Authorization': HttpConfig.token,
-              'userId': HttpConfig.userId,
+              'Authorization': prefs.getString('token'),
+              'userId': prefs.getString('userId'),
             },
             body: json.encode(Transaction(
                     food: food,
@@ -116,11 +118,12 @@ class _FoodDetailsState extends State<FoodDetails> {
     });
   }
 
-  Future<void> deleteFood(BuildContext ctx, Food food) {
+  Future<void> deleteFood(BuildContext ctx, Food food) async{
+    final prefs = await SharedPreferences.getInstance();
     var url = Uri.https(HttpConfig.baseUrl, 'food/${food.id}');
     return http.delete(url, headers: {
-      'Authorization': HttpConfig.token,
-      'userId': HttpConfig.userId,
+      'Authorization': prefs.getString('token'),
+      'userId': prefs.getString('userId'),
     }).then((response) {
       if (response.statusCode != 200) {
         throw Error();
