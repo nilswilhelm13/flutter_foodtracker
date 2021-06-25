@@ -118,7 +118,7 @@ class _FoodDetailsState extends State<FoodDetails> {
                     date: date)
                 .toJson()))
         .then((value) {
-      Provider.of<DashboardProvider>(ctx, listen: false).fetchIntake();
+      Provider.of<DashboardProvider>(ctx, listen: false).fetchIntake(date);
       Navigator.of(ctx).pop();
     });
   }

@@ -20,13 +20,14 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   bool _isLoading = true;
   String barcode = '';
+  DateTime date = DateTime.now();
 
   void fetchIntake(BuildContext context) {
     var provider = Provider.of<DashboardProvider>(context, listen: false);
     setState(() {
       _isLoading = true;
     });
-    provider.fetchIntake().then((value) {
+    provider.fetchIntake(date).then((value) {
       setState(() {
         _isLoading = false;
       });
@@ -69,6 +70,12 @@ class _DashboardState extends State<Dashboard> {
                   );
                 });
               }),
+          IconButton(onPressed: (){
+            showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2020), lastDate: DateTime(2030)).then((value) {
+              date = value;
+              fetchIntake(context);
+            });
+          }, icon: Icon(Icons.calendar_today))
         ],
       ),
       body: _isLoading
