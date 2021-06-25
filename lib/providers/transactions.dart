@@ -13,11 +13,11 @@ class Transactions with ChangeNotifier {
     return [..._transactions];
   }
 
-  Future<void> fetchTransactions() async {
+  Future<void> fetchTransactions(DateTime date) async {
     final prefs = await SharedPreferences.getInstance();
     var url =
         Uri.https(HttpConfig.baseUrl, 'transactions', {
-          'date': DateFormat('yyyy-MM-dd').format(DateTime.now())
+          'date': DateFormat('yyyy-MM-dd').format(date)
         });
     try {
       final response = await http.get(url, headers: {

@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_foodtracker/error_handling/generic_error_handling.dart';
 import 'package:flutter_foodtracker/providers/transactions.dart';
 import 'package:flutter_foodtracker/widgets/app_drawer.dart';
 import 'package:flutter_foodtracker/widgets/generic_error_modal.dart';
@@ -19,11 +18,16 @@ class TransactionsList extends StatefulWidget {
 class _TransactionsListState extends State<TransactionsList> {
   bool _isLoading = true;
   List<Transaction> _transactions = [];
-
+  DateTime date = DateTime.now();
   @override
   void initState() {
+    fetchTransactions();
+    super.initState();
+  }
+
+  void fetchTransactions(){
     var provider = Provider.of<Transactions>(context, listen: false);
-    provider.fetchTransactions().then((value) {
+    provider.fetchTransactions(date).then((value) {
       setState(() {
         _isLoading = false;
         _transactions = provider.transactions;
@@ -31,7 +35,6 @@ class _TransactionsListState extends State<TransactionsList> {
     }).catchError((error) {
       showDialog(context: context, builder: (ctx) => GenericErrorModal(error));
     });
-    super.initState();
   }
 
   @override
@@ -39,6 +42,14 @@ class _TransactionsListState extends State<TransactionsList> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Transactions'),
+        actions: [
+          IconButton(onPressed: (){
+            showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2020), lastDate: DateTime(2030)).then((value) {
+              date = value;
+              fetchTransactions();
+            });
+          }, icon: Icon(Icons.calendar_today))
+        ],
       ),
       drawer: AppDrawer(),
       body: Center(
