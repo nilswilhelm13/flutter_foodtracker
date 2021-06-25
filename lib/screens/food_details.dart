@@ -20,7 +20,7 @@ class FoodDetails extends StatefulWidget {
 
 class _FoodDetailsState extends State<FoodDetails> {
   double _amount = 0;
-
+  DateTime date = DateTime.now();
   Widget buildRow(String label, double value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -88,6 +88,11 @@ class _FoodDetailsState extends State<FoodDetails> {
                 });
               },
             ),
+            IconButton(onPressed: (){
+              showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2020), lastDate: DateTime(2030)).then((value) => {
+                date = value
+              });
+            }, icon: Icon(Icons.calendar_today)),
             TextButton(
                 onPressed: () => postTransaction(context, _food, _amount),
                 child: Text('Submit')),
@@ -110,7 +115,7 @@ class _FoodDetailsState extends State<FoodDetails> {
                     food: food,
                     amount: _amount,
                     foodId: food.id,
-                    date: DateTime.now())
+                    date: date)
                 .toJson()))
         .then((value) {
       Provider.of<DashboardProvider>(ctx, listen: false).fetchIntake();

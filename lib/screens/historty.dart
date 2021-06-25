@@ -253,7 +253,7 @@ class HistoryState extends State<History> {
         'userId': prefs.getString('userId'),
       });
       if (response.statusCode != 200) {
-        throw Exception('could fetch history');
+        throw Exception('could not fetch history');
       }
       List<dynamic> responseJSON = json.decode(response.body);
       List<Intake> intakeList = responseJSON
