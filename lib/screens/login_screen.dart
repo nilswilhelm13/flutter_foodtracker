@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foodtracker/config/http_config.dart';
 import 'package:flutter_foodtracker/widgets/generic_error_modal.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_foodtracker/screens/dashboard.dart';
 import 'dart:convert';
 
 import 'dashboard.dart';
+
 class LoginScreen extends StatefulWidget {
   static const routeName = '/login';
   @override
@@ -20,40 +22,66 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Login'),
-    ),
-      body: Center(
-        child: Column(
-          children: [
-            Text("email"),
-            TextField(
-                onChanged: (content) => {
-                  email = content
-                },
-            ),
-            Text("password"),
-            TextField(
-              onChanged: (content) => {
-                password = content
-              },
-            ),
-            TextButton(onPressed: () => login(context), child: Text("Login"), ),
-            Text(errorString),
-          ],
+        body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Spacer(),
+          Text(
+            "Login",
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          ),
+          Spacer(),
+          buildContainer(
+              Icons.mail, "email", (value) => {email = value}, false),
+          buildContainer(
+              Icons.lock, "password", (value) => {password = value}, true),
+          Spacer(),
+          ElevatedButton(
+              onPressed: () => login(context),
+              child: Text('Login'),
+              style: ElevatedButton.styleFrom(
+                  shape: StadiumBorder(),
+                  padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+                  textStyle: TextStyle(fontSize: 18))),
+          Text(errorString),
+          Spacer(),
+        ],
+      ),
+    ));
+  }
+
+  Container buildContainer(
+      IconData iconData, String hint, Function(String) fun, bool obscureText) {
+    return Container(
+      margin: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(width: 1)),
+      child: ListTile(
+        leading: Icon(iconData),
+        title: TextField(
+          obscureText: obscureText,
+          decoration: InputDecoration(
+            hintText: hint,
+            border: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+          ),
+          onChanged: (content) => {email = content},
         ),
-      )
+      ),
     );
   }
-  void login(BuildContext ctx) async{
-    if (password == '' || email == '')return;
-    var url =
-    Uri.https(HttpConfig.baseUrl, 'login');
+
+  void login(BuildContext ctx) async {
+    if (password == '' || email == '') return;
+    var url = Uri.https(HttpConfig.baseUrl, 'login');
     try {
-      final response = await http.post(url,body: json.encode({
-        'email': email,
-        'password': password
-      }));
+      final response = await http.post(url,
+          body: json.encode({'email': email, 'password': password}));
       if (response.statusCode == 200) {
         // obtain shared preferences
         final prefs = await SharedPreferences.getInstance();
@@ -70,7 +98,5 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (error) {
       showDialog(context: context, builder: (ctx) => GenericErrorModal(error));
     }
-
   }
-
 }
