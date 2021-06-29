@@ -151,13 +151,18 @@ class _CreateFoodState extends State<CreateFood> {
           },
           body: json.encode(_food.toJson()));
       _isLoading = false;
-      if (response.statusCode != 200) {
-        throw Exception('could post food');
+      if (response.statusCode ~/ 100 != 2) {
+        showDialog(context: context,
+            builder: (ctx) =>
+                GenericErrorModal(Exception(
+                    "status code:" + response.statusCode.toString())));
       }
-      var createdFood = json.decode(response.body) as Food;
-      Navigator.pushReplacementNamed(context, FoodDetails.routeName, arguments: createdFood);
-    } catch (error) {
-      showDialog(context: context, builder: (ctx) => GenericErrorModal(error));
+      var createdFood = json.decode(response.body) as Map<String, dynamic>;
+      Navigator.pushReplacementNamed(context, FoodDetails.routeName,
+          arguments: Food.fromJson(createdFood));
+    }
+    catch (error) {
+
     }
   }
 
@@ -189,13 +194,14 @@ class _CreateFoodState extends State<CreateFood> {
             "brand": _food.brand,
           }));
       _isLoading = false;
-      if (response.statusCode != 200) {
-        throw Exception('could edit food');
+      if (response.statusCode ~/ 100 != 2) {
+        showDialog(context: context, builder: (ctx) => GenericErrorModal(Exception(
+            "status code:" + response.statusCode.toString())));
       }
-      var editedFood = json.decode(response.body) as Food;
-      Navigator.pushReplacementNamed(context, FoodDetails.routeName, arguments: editedFood);
+      var editedFood = json.decode(response.body) as Map<String, dynamic>;
+      Navigator.pushReplacementNamed(context, FoodDetails.routeName, arguments: Food.fromJson(editedFood));
     } catch (error) {
-      showDialog(context: context, builder: (ctx) => GenericErrorModal(error));
+
     }
   }
 }
