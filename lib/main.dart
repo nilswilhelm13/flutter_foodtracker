@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_foodtracker/models/dashboard_data.dart';
 import 'package:flutter_foodtracker/providers/dashboard_provider.dart';
 import 'package:flutter_foodtracker/providers/food_provider.dart';
 import 'package:flutter_foodtracker/providers/intakes.dart';
@@ -10,7 +8,7 @@ import 'package:flutter_foodtracker/screens/create_food.dart';
 import 'package:flutter_foodtracker/screens/create_meal.dart';
 import 'package:flutter_foodtracker/screens/dashboard.dart';
 import 'package:flutter_foodtracker/screens/food_details.dart';
-import 'package:flutter_foodtracker/screens/historty.dart';
+import 'package:flutter_foodtracker/screens/history.dart';
 import 'package:flutter_foodtracker/screens/login_screen.dart';
 import 'package:flutter_foodtracker/screens/transactions_list.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +31,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          primarySwatch: Colors.green,
         ),
         home: Dashboard(),
         routes: {
