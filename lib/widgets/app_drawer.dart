@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_foodtracker/screens/create_meal.dart';
 import 'package:flutter_foodtracker/screens/dashboard.dart';
-import 'package:flutter_foodtracker/screens/historty.dart';
+import 'package:flutter_foodtracker/screens/history.dart';
 import 'package:flutter_foodtracker/screens/login_screen.dart';
 import 'package:flutter_foodtracker/screens/transactions_list.dart';
 
